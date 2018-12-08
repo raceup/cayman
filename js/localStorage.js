@@ -1,3 +1,5 @@
+'use strict';
+
 function getCurrentStatus() {
 	let currentStatus = null;
 	if (localStorage.status) {

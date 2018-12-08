@@ -1,3 +1,5 @@
+'use strict';
+
 function getTitle() {
 	if (isTestFinished()) {
 		return "Test completed!"
@@ -28,14 +30,17 @@ function getPageContent() {
 			"<p><b>Time spent: </b>" + getMMSSString(times[i]) + "</p>\n" +
 			"<p><b>Question: </b>" + test[i]["question"] + "</p>\n" +
 			"<p><b>Correct answer: </b>" + test[i]["correctAnswer"] + "</p>\n" +
-			"<p><b>Your answer: </b>" + Array.from(answers[i]).join(' e ') + "</p>\n" +
-			"<b>Other answers: </b><ul>";
+			"<p><b>Your answer: </b>" + Array.from(answers[i]).join(' e ') + "</p>";
 
-		for (let j = 0; j < test[i]["wrongAnswers"].length; j++) {
-			outHtml += "<li>" + test[i]["wrongAnswers"][j] + "</li>";
+		if (test[i]["wrongAnswers"].length > 0 && !test[i]["wrongAnswers"].includes('…')) {
+			outHtml += "\n<b>Other answers: </b><ul>";
+			for (let j = 0; j < test[i]["wrongAnswers"].length; j++) {
+				outHtml += "<li>" + test[i]["wrongAnswers"][j] + "</li>";
+			}
+			outHtml += "</ul>";
 		}
 
-		outHtml += "</ul></li>";
+		outHtml += "</li>";
 	}
 	outHtml += "</ul><br><h2>Summary of attempts:</h2><br><ul>";
 	let numAttempts = getTestAttemptNumber();

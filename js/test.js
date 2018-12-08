@@ -1,3 +1,5 @@
+'use strict';
+
 let attemptTime = 0; // seconds elapsed during attempt
 let questionTime = 0; // seconds elapsed during this question
 let totalTime = getTestTotalTime(); // seconds elapsed during all test
@@ -37,17 +39,34 @@ function showErrorLoadingTest() {
 	$(".main-content").removeClass("test-content");
 }
 
+function getUserInputAnswerHTML() {
+	return '<input type="number">';
+}
+
+function getPossibleAnswersHTML(answers) {
+	let out = '';
+
+	for (let j = 0; j < answers.length; j++) {
+		if (answers[j].length > 0) {
+			out += "<input type='checkbox'" +
+				" name='group" + currentQuestionIndex + "' value='" + answers[j] + "'>  " + answers[j] + "<br>";
+		}
+	}
+
+	return out;
+}
+
 function getTestCanvas() {
 	let testCanvasHtml = "<form id='questionsForm'>"; // start form
 	testCanvasHtml += "<h2>Question #" + (currentQuestionIndex + 1) + "</h2>";
 	testCanvasHtml += "<img id='image" + currentQuestionIndex + "' src=''>";
 	testCanvasHtml += "<h3>" + questions[currentQuestionIndex]["question"] + "</h3>";
+
 	let answers = questions[currentQuestionIndex]["allAnswers"];
-	for (let j = 0; j < answers.length; j++) {
-		if (answers[j].length > 0) {
-			testCanvasHtml += "<input type='checkbox'" +
-				" name='group" + currentQuestionIndex + "' value='" + answers[j] + "'>  " + answers[j] + "<br>";
-		}
+	if (answers.includes('…')) { // this requires user input
+		testCanvasHtml += getUserInputAnswerHTML();
+	} else {
+		testCanvasHtml += getPossibleAnswersHTML(answers);
 	}
 
 	// submit button
@@ -82,9 +101,14 @@ function populatePage() {
 function saveAnswer() {
 	let formOptions = $("#questionsForm").find("input");
 	let answered = new Set();
+
 	for (let i = 0; i < formOptions.length; i++) {
-		if (formOptions[i].checked) {
+		if (formOptions[i].type === 'number') {
 			answered.add(formOptions[i].value);
+		} else if (formOptions[i].type === 'checkbox') {
+			if (formOptions[i].checked) {
+				answered.add(formOptions[i].value);
+			}
 		}
 	}
 
@@ -135,9 +159,6 @@ function loadPage() {
 }
 
 function containSameStuff(as, bs) {
-	console.log(as);
-	console.log(bs);
-
 	if (as.size !== bs.size) {
 		return false;
 	}
@@ -211,7 +232,6 @@ function displayImageFromStorage(imageId, storageId) {
 
 loadPage();
 let timer = setInterval(displayTimer, 1000); // repeat this function each second
-
 
 function pauseTest() {
 	clearInterval(timer);  // stop updating time

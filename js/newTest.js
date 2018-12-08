@@ -1,3 +1,5 @@
+'use strict';
+
 function loadNewTest() {
 	setStatusNew();
 
@@ -44,15 +46,22 @@ function showRawTest(data) {
 		outHtml +=
 			"<li><h2>Question #" + (i + 1) + "</h2>\n" +
 			"<p><b>Question: </b>" + question['question'] + "</p>\n" +
-			"<p><b>Correct answer: </b>" + question['correctAnswer'] + "</p>\n" +
-			"<b>Other answers: </b><ul>";
+			"<p><b>Correct answer: </b>" + question['correctAnswer'] + "</p>";
 
-		for (let j = 0; j < question['wrongAnswers'].length; j++) {
-			outHtml += "<li>" + question['wrongAnswers'][j] + "</li>";
+		console.log(question);
+		console.log(question['wrongAnswers'][0] === '…');
+
+		if (question['wrongAnswers'][0] === '…') { // requires user input
+			outHtml += "\n<b>Requires user input</b></li>";
+		} else {
+			outHtml += "\n<b>Other answers: </b><ul>";
+			for (let j = 0; j < question['wrongAnswers'].length; j++) {
+				outHtml += "<li>" + question['wrongAnswers'][j] + "</li>";
+			}
+			outHtml += "</ul></li>";
 		}
 
-		outHtml += "</ul></li>";
-		outHtml += "<br></br_><form>" +
+		outHtml += "</br><form>" +
 			"        <p>Browse image (optional)</p>" +
 			"        <input type='file' id='imageInput" + i + "'\n" +
 			"               accept='image/x-png,image/gif,image/jpeg'" +

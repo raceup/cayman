@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Fisher-Yates shuffler
  * @param array
