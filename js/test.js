@@ -1,10 +1,13 @@
-// global vars
+'use strict';
+
 let attemptTime = 0; // seconds elapsed during attempt
+let questionTime = 0; // seconds elapsed during this question
 let totalTime = getTestTotalTime(); // seconds elapsed during all test
 let attemptNumber = getTestAttemptNumber() + 1;
 let questions = null;
 let currentQuestionIndex = -1;
 let answers = {};
+let times = {}; // time spent for each question
 
 function abortTest() {
 	if (confirm("Are you sure you want to abort the test?")) {
@@ -14,7 +17,11 @@ function abortTest() {
 }
 
 function displayTimer() {
+	questionTime += 1; // increase by 1 second ...
 	attemptTime += 1;
+
+	document.getElementById("questionTimer")
+		.innerHTML = getMMSSString(questionTime); // ... and display
 	document.getElementById("totalTimer")
 		.innerHTML = getMMSSString(totalTime + attemptTime);
 }
@@ -25,7 +32,6 @@ function showErrorLoadingTest() {
 		" one!";
 	document.getElementById("test-canvas").innerHTML = out;
 
-
 	document.getElementById("testHeader").innerHTML = "<section class=\"page-header\">\n" +
 		"<h1 class=\"project-name\" align=\"center\">Ooops! Test not found!</h1>\n" +
 		"</section>";
@@ -33,17 +39,34 @@ function showErrorLoadingTest() {
 	$(".main-content").removeClass("test-content");
 }
 
+function getUserInputAnswerHTML() {
+	return '<input type="number">';
+}
+
+function getPossibleAnswersHTML(answers) {
+	let out = '';
+
+	for (let j = 0; j < answers.length; j++) {
+		if (answers[j].length > 0) {
+			out += "<input type='checkbox'" +
+				" name='group" + currentQuestionIndex + "' value='" + answers[j] + "'>  " + answers[j] + "<br>";
+		}
+	}
+
+	return out;
+}
+
 function getTestCanvas() {
 	let testCanvasHtml = "<form id='questionsForm'>"; // start form
 	testCanvasHtml += "<h2>Question #" + (currentQuestionIndex + 1) + "</h2>";
 	testCanvasHtml += "<img id='image" + currentQuestionIndex + "' src=''>";
 	testCanvasHtml += "<h3>" + questions[currentQuestionIndex]["question"] + "</h3>";
+
 	let answers = questions[currentQuestionIndex]["allAnswers"];
-	for (let j = 0; j < answers.length; j++) {
-		if (answers[j].length > 0) {
-			testCanvasHtml += "<input type='checkbox'" +
-				" name='group" + currentQuestionIndex + "' value='" + answers[j] + "'>  " + answers[j] + "<br>";
-		}
+	if (answers.includes('…')) { // this requires user input
+		testCanvasHtml += getUserInputAnswerHTML();
+	} else {
+		testCanvasHtml += getPossibleAnswersHTML(answers);
 	}
 
 	// submit button
@@ -78,19 +101,29 @@ function populatePage() {
 function saveAnswer() {
 	let formOptions = $("#questionsForm").find("input");
 	let answered = new Set();
+
 	for (let i = 0; i < formOptions.length; i++) {
-		if (formOptions[i].checked) {
+		if (formOptions[i].type === 'number') {
 			answered.add(formOptions[i].value);
+		} else if (formOptions[i].type === 'checkbox') {
+			if (formOptions[i].checked) {
+				answered.add(formOptions[i].value);
+			}
 		}
 	}
 
 	answers[currentQuestionIndex] = answered;
-
-	console.log(answered);
-	console.log(answers);
+	times[currentQuestionIndex] = questionTime;
 }
 
 function loadAnswer() {
+	let previousTime = times[currentQuestionIndex];
+	if (previousTime === undefined) {
+		previousTime = 0;
+	}
+
+	questionTime = previousTime; // reset question timer
+
 	let formOptions = $("#questionsForm").find("input");
 	let hasAlreadyAnswered = false;
 	for (let i = 0; i < formOptions.length; i++) {
@@ -126,6 +159,10 @@ function loadPage() {
 }
 
 function containSameStuff(as, bs) {
+	if (as.size !== bs.size) {
+		return false;
+	}
+
 	for (let a of as) {
 		if (!bs.has(a)) {
 			return false;
@@ -178,14 +215,12 @@ function submitTestAttempt() {
 	setStatusSubmit();
 	addTimeToTotal(attemptTime); // log attempt time
 	logAttempt();
-	logAnswers(answers);
+	saveAnswers(answers);
+	setTimes(times);
 
 	const nWrongAnswers = checkAnswers();
 	endTest(nWrongAnswers);
 }
-
-loadPage();
-setInterval(displayTimer, 1000); // repeat this function each second
 
 function displayImageFromStorage(imageId, storageId) {
 	let image = document.getElementById(imageId);
@@ -193,5 +228,21 @@ function displayImageFromStorage(imageId, storageId) {
 	if (imageData !== null) {
 		image.src = atob(imageData);
 	}
+}
 
+loadPage();
+let timer = setInterval(displayTimer, 1000); // repeat this function each second
+
+function pauseTest() {
+	clearInterval(timer);  // stop updating time
+
+	const doc = document.getElementById('resumePauseCell');
+	doc.innerHTML = '<a onclick="resumeTest();" id="resumeAttemptButton" class="btn">Resume</a>';
+}
+
+function resumeTest() {
+	timer = setInterval(displayTimer, 1000);
+
+	const doc = document.getElementById('resumePauseCell');
+	doc.innerHTML = '<a onclick="pauseTest();" id="startPauseAttemptButton" class="btn">Pause</a>';
 }

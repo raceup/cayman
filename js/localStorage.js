@@ -1,3 +1,5 @@
+'use strict';
+
 function getCurrentStatus() {
 	let currentStatus = null;
 	if (localStorage.status) {
@@ -14,9 +16,6 @@ function setLocalTest(test) {
 
 	const json = JSON.stringify(test);
 	localStorage.setItem("test", json);
-
-	console.log('Saved test:');
-	console.log('test -> \n', json);
 }
 
 function getLocalTest() {
@@ -125,10 +124,9 @@ function logAttempt() {
 	let attemptNumber = getTestAttemptNumber();
 	attemptNumber += 1;
 	localStorage.setItem("attemptNumber", attemptNumber);
-	console.log("Logging new attempt. New attempt # is " + attemptNumber);
 }
 
-function logAnswers(answers) {
+function saveAnswers(answers) {
 	const jsonAnswers = {};
 	Object.keys(answers).forEach(function (key) {
 		jsonAnswers[key] = Array.from(answers[key]); // set -> list to stringify
@@ -136,7 +134,6 @@ function logAnswers(answers) {
 
 	answers = JSON.stringify(jsonAnswers);
 
-	console.log('saving', answers);
 	localStorage.setItem("answers", answers);
 }
 
@@ -158,4 +155,16 @@ function setResults(results) {
 function getResults() {
 	const results = localStorage.getItem("results");
 	return JSON.parse(results);
+}
+
+/**
+ * Saves times of questions in db
+ * @param times times of questions
+ */
+function setTimes(times) {
+	localStorage.setItem('times', JSON.stringify(times));
+}
+
+function getTimes() {
+	return JSON.parse(localStorage.getItem('times'));
 }
