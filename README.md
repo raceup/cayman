@@ -24,8 +24,18 @@ then *double click* on `index.html` or
 $ xdg-open index.html
 ```
 
-## Changelog
-See the official [Cayman theme changelog here](https://github.com/pages-themes/cayman/commits/master); see [this one](https://github.com/raceup/yentl/blob/master/CHANGELOG.md) for project-related changes.
+### How to write Excel files
+There are various placeholders you can use:
+
+- `$` means an image. Use of this in option/answer means that when setting up the test you're require to upload an image
+- `...` means an input. Use of this in option means that the user will have to input a number rather than choose the correct answer.
+
+![Example questions](extra/questions.png)
+
+### Remainders
+
+- Do not forget to include a header like `question name,correct answer,other correct answer,option,option...`
+- Even if there is just one possible answer, leave the blank
 
 ## Contribute
 
